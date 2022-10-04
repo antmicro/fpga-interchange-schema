@@ -117,6 +117,7 @@ struct Device {
   wireTypes      @16 : List(WireType);
   pipTimings     @17 : List(PIPTiming);
   nodeTimings    @18 : List(NodeTiming);
+  clustering     @19 : Clustering;
 
   #######################################
   # Placement definition objects
@@ -688,6 +689,59 @@ struct Device {
       noMax @4 : Void;
       max   @5 : Float32;
     }
+  }
+
+  ######################################
+  # Clustering rules
+  #
+  # The following structures describe rules necessary to form clusters of
+  # logical cells. Clusters are then placed spanning multiple BELs according
+  # to the list of BELs defined in a rule.
+  ######################################
+
+  struct Clustering {
+
+    # A cell pin within a cluster
+    struct CellPin {
+      # Cell type
+      cellType    @0 : Text;
+      # Cell pin
+      cellPin     @1 : Text;
+    }
+
+    # A cell instance within a cluster
+    struct CellPinInstance {
+      # Unique instance id of the cell within the cluster
+      instanceId  @0 : UInt32;
+      # List of allowed types and pins
+      cellPins    @1 : List(CellPin);
+    }
+    
+    # A connection between two cells within a cluster
+    struct ClusterConnection {
+      fromPin     @0 : CellPinInstance;
+      toPin       @1 : CellPinInstance;
+      # When true the connection may not exist for the cluster to be formed
+      isOptional  @2 : Bool;
+    }
+  
+    # Informs how a cluster can be placed
+    struct ClusterBELs {
+      # Site type
+      siteType    @0 : Text;
+      # List of BELs indexed by cluster cell instance ids
+      bels        @1 : List(Text);
+    }  
+  
+    # A single clustering rule
+    struct ClusteringRule {
+      # A list of logical connection rules
+      connections @0 : List(ClusterConnection);
+      # A list of placement rules for the cluster
+      placement   @1 : List(ClusterBELs);
+    }
+  
+    rules @0 : List(ClusteringRule);
   }
 
   ######################################
